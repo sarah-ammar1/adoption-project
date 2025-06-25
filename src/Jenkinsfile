@@ -4,23 +4,17 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/yourname/AdoptionProject.git' 
+                git 'https://github.com/yourname/adoption-Project.git' 
             }
         }
 
-        stage('Build') {
+        stage('Build & Test') {
             steps {
                 sh 'mvn clean package'
             }
         }
 
-        stage('Unit Tests') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Code Quality - SonarQube') {
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarServer') {
                     sh 'mvn sonar:sonar'
@@ -28,29 +22,18 @@ pipeline {
             }
         }
 
-        stage('Upload Artifact to Nexus') {
+        stage('Push Docker Image') {
             steps {
-                sh 'mvn deploy'
+                script {
+                    docker.withRegistry("https://registry.hub.docker.com",  "docker-hub-credentials-id") {
+                        def app = docker.build("your-dockerhub-user/adoption-app")
+                        app.push()
+                    }
+                }
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t adoption-app:latest .'
-            }
-        }
-
-        stage('Push Docker Image to DockerHub') {
-            steps {
-                sh '''
-                  docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
-                  docker tag adoption-app your-dockerhub-user/adoption-app:latest
-                  docker push your-dockerhub-user/adoption-app:latest
-                '''
-            }
-        }
-
-        stage('Deploy App with Docker Compose') {
+        stage('Deploy with Docker Compose') {
             steps {
                 sh 'docker-compose up -d'
             }
