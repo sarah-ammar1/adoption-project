@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/yourname/AdoptionProject.git' 
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Code Quality - SonarQube') {
+            steps {
+                withSonarQubeEnv('MySonarServer') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Upload Artifact to Nexus') {
+            steps {
+                sh 'mvn deploy'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t adoption-app:latest .'
+            }
+        }
+
+        stage('Push Docker Image to DockerHub') {
+            steps {
+                sh '''
+                  docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
+                  docker tag adoption-app your-dockerhub-user/adoption-app:latest
+                  docker push your-dockerhub-user/adoption-app:latest
+                '''
+            }
+        }
+
+        stage('Deploy App with Docker Compose') {
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}
