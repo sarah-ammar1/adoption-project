@@ -11,7 +11,9 @@ pipeline {
         // Use the exact credential IDs from Jenkins
         DOCKER_HUB_CRED_ID = "28462d94-1f6d-4e48-8753-5553a46d3673"  // Docker Hub
         NEXUS_CRED_ID = "e12281ed-f59d-4052-a032-32c5d29f32ba"        // Nexus
-        SONAR_TOKEN_ID = "b72f7d00-7a30-4a6d-8606-1d3ab6f67bba"       // SonarQube token
+        SONAR_TOKEN_ID = "sonarqube_token"       // SonarQube token
+
+        // SONAR_TOKEN_ID = "sqa_3bce9215175745a13c6d85c637785f206ccd93e2"       // SonarQube token
     }
 
     stages {
@@ -27,26 +29,18 @@ pipeline {
                 echo "🔨 Building Maven project"
                 sh '''
             chmod +x ./mvnw
-            ./mvnw clean package
+            ./mvnw clean package -Dhttps.protocols=TLSv1.2
         '''
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo "📊 Running SonarQube analysis"
-                
-                // Retrieve the SonarQube token from Jenkins credentials
-                withCredentials([string(credentialsId: "${SONAR_TOKEN_ID}", variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                        ./mvnw sonar:sonar \
-                          -Dsonar.projectKey=${PROJECT_KEY} \
-                          -Dsonar.host.url=${NEXUS_URL}/sonarqube \
-                          -Dsonar.login=${SONAR_TOKEN}
-                    '''
-                }
-            }
+    stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            sh './mvnw sonar:sonar'
         }
+    }
+}
 
         stage('Upload Artifact to Nexus') {
             steps {
