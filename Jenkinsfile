@@ -35,16 +35,17 @@ pipeline {
         }
 
 stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') {  // 'sonarqube' must match your Jenkins SonarQube server name
-                    sh '''
-                        mvn sonar:sonar \
-                          -Dsonar.host.url=http://localhost:9000 \
-                          -Dsonar.token=${SONAR_TOKEN}
-                    '''
-                }
-            }
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            sh '''
+                chmod +x ./mvnw  # Ensure wrapper is executable
+                ./mvnw sonar:sonar \
+                  -Dsonar.host.url=http://localhost:9000 \
+                  -Dsonar.token=${SONAR_TOKEN}
+            '''
         }
+    }
+}
 
         stage('Upload Artifact to Nexus') {
             steps {
@@ -78,7 +79,7 @@ stage('SonarQube Analysis') {
         stage('Build Docker Image') {
             steps {
                 echo "🐋 Building Docker image: ${DOCKER_IMAGE}:latest"
-                sh 'docker build -t adoption-project:latest .                                  .'
+                sh 'docker build -t ${DOCKER_IMAGE}:latest .'
             }
         }
 
@@ -88,7 +89,7 @@ stage('SonarQube Analysis') {
                 
                 // Use Docker Hub credentials
                 withDockerRegistry([credentialsId: "${DOCKER_HUB_CRED_ID}", url: ""]) {
-                    sh 'docker push sarah1407/adoption-project:latest                             '
+                    sh 'docker push ${DOCKER_IMAGE}:latest'
                 }
             }
         }
