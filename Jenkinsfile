@@ -7,8 +7,11 @@ pipeline {
         SONAR_SERVER = 'sonarqube'
         PROJECT_KEY = 'adoption-project'
         GIT_REPO = "https://github.com/sarah-ammar1/adoption-project.git "
-        DOCKER_HUB_CRED = credentials('docker-hub-credentials') // Jenkins credential ID for Docker Hub
-        NEXUS_CRED = credentials('nexus-credentials') // Jenkins credential ID for Nexus
+        
+        // Use the exact credential IDs from Jenkins
+        DOCKER_HUB_CRED_ID = "28462d94-1f6d-4e48-8753-5553a46d3673"  // Docker Hub
+        NEXUS_CRED_ID = "e12281ed-f59d-4052-a032-32c5d29f32ba"        // Nexus
+        SONAR_TOKEN_ID = "b72f7d00-7a30-4a6d-8606-1d3ab6f67bba"       // SonarQube token
     }
 
     stages {
@@ -31,7 +34,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "📊 Running SonarQube analysis"
-                withSonarQubeEnv(installationName: "${SONAR_SERVER}") {
+                
+                // Retrieve the SonarQube token from Jenkins credentials
+                withCredentials([string(credentialsId: "${SONAR_TOKEN_ID}", variable: 'SONAR_TOKEN')]) {
                     sh '''
                         ./mvnw sonar:sonar \
                           -Dsonar.projectKey=${PROJECT_KEY} \
@@ -45,9 +50,11 @@ pipeline {
         stage('Upload Artifact to Nexus') {
             steps {
                 echo "📦 Uploading JAR to Nexus"
+                
+                // Use Nexus credentials
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'nexus-credentials',
+                        credentialsId: "${NEXUS_CRED_ID}",
                         usernameVariable: 'NEXUS_USER',
                         passwordVariable: 'NEXUS_PASSWORD'
                     )
@@ -79,7 +86,9 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo "🚢 Pushing Docker image to Docker Hub"
-                withDockerRegistry([credentialsId: "docker-hub-credentials", url: ""]) {
+                
+                // Use Docker Hub credentials
+                withDockerRegistry([credentialsId: "${DOCKER_HUB_CRED_ID}", url: ""]) {
                     sh 'docker push ${DOCKER_IMAGE}:latest'
                 }
             }
