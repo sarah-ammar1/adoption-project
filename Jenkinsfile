@@ -26,8 +26,9 @@ pipeline {
             steps {
                 echo "🔨 Building Maven project"
                 sh '''
-                    ./mvnw clean package
-                '''
+            chmod +x ./mvnw
+            ./mvnw clean package
+        '''
             }
         }
 
@@ -105,18 +106,16 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo "✅ Pipeline succeeded! Application deployed."
-            slackSend channel: '#devops-cd', color: 'good', message: "✅ Deployment successful!"
-        }
-        failure {
-            echo "❌ Pipeline failed! Check logs for details."
-            slackSend channel: '#devops-cd', color: 'danger', message: "❌ Deployment failed!"
-        }
-        always {
-            echo "🧹 Cleaning up workspace..."
-            cleanWs()
-        }
+ post {
+    success {
+        echo "✅ Pipeline succeeded! Application deployed."
     }
+    failure {
+        echo "❌ Pipeline failed! Check logs for details."
+    }
+    always {
+        echo "🧹 Cleaning up workspace..."
+        deleteDir()
+    }
+}
 }
