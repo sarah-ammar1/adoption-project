@@ -27,7 +27,7 @@ public class AdoptionServicesImpl implements IAdoptionServices{
     }
 
     @Override
-    public Adoption addAdoption(Adoption adoption, int idAdoptant, int idAnimal) {
+    public Adoption addAdoption(Adoption adoption, String idAdoptant, String idAnimal) {
         Adoptant adoptant = adoptantRepository.findById(idAdoptant).orElse(null);
         Animal animal = animalRepository.findById(idAnimal).orElse(null);
         if (adoptant != null && animal != null) {
@@ -44,7 +44,7 @@ public class AdoptionServicesImpl implements IAdoptionServices{
     }
 
     @Override
-    public float calculFraisTotalAdoptions(int idAdoptant) {
+    public float calculFraisTotalAdoptions(String idAdoptant) {
         List<Adoption> adoptions = adoptionRepository.findByAdoptant_IdAdoptant(idAdoptant);
         float total = 0f;
         for (Adoption adoption : adoptions) {

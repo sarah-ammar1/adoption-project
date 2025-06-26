@@ -26,8 +26,8 @@ public class AdoptionRestController {
 
     @PostMapping("/addAdoption/{idAdoptant}/{idAnimal}")
     public Adoption addAdoption(@RequestBody Adoption adoption,
-                                @PathVariable int idAdoptant,
-                                @PathVariable int idAnimal) {
+                                @PathVariable String idAdoptant,
+                                @PathVariable String idAnimal) {
         return adoptionServices.addAdoption(adoption, idAdoptant, idAnimal);
     }
 
@@ -37,7 +37,7 @@ public class AdoptionRestController {
     }
 
     @GetMapping("/totalFrais/{idAdoptant}")
-    public float calculTotalFrais(@PathVariable int idAdoptant) {
+    public float calculTotalFrais(@PathVariable String idAdoptant) {
         return adoptionServices.calculFraisTotalAdoptions(idAdoptant);
     }
 }

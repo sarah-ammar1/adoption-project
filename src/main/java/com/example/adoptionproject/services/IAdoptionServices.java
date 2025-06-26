@@ -9,9 +9,9 @@ public interface IAdoptionServices {
 
     Animal addAnimal(Animal animal);
 
-    Adoption addAdoption(Adoption adoption, int idAdoptant, int idAnimal);
+    Adoption addAdoption(Adoption adoption, String idAdoptant, String idAnimal);
 
     List<Adoption> getAdoptionsByAdoptant(String nom);
 
-    float calculFraisTotalAdoptions(int idAdoptant);
+    float calculFraisTotalAdoptions(String idAdoptant);
 }

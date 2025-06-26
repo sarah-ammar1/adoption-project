@@ -18,6 +18,7 @@ public class Adoptant {
 
     @Id
     private String id; // MongoDB uses String IDs by default
+    private String idAdoptant; // This is your custom ID field
 
     private String nom;
     private String adresse;
