@@ -7,11 +7,11 @@ pipeline {
         SONAR_SERVER = 'sonarqube'
         PROJECT_KEY = 'adoption-project'
         GIT_REPO = "https://github.com/sarah-ammar1/adoption-project.git "
-        
+        SONAR_TOKEN = credentials('SONARQUBE_TOKEN')
+
         // Use the exact credential IDs from Jenkins
         DOCKER_HUB_CRED_ID = "28462d94-1f6d-4e48-8753-5553a46d3673"  // Docker Hub
         NEXUS_CRED_ID = "e12281ed-f59d-4052-a032-32c5d29f32ba"        // Nexus
-        SONAR_TOKEN_ID = "sonarqube_token"       // SonarQube token
 
         // SONAR_TOKEN_ID = "sqa_3bce9215175745a13c6d85c637785f206ccd93e2"       // SonarQube token
     }
@@ -34,13 +34,17 @@ pipeline {
             }
         }
 
-    stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('sonarqube') {
-            sh './mvnw sonar:sonar'
+stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {  // 'sonarqube' must match your Jenkins SonarQube server name
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.token=${SONAR_TOKEN}
+                    '''
+                }
+            }
         }
-    }
-}
 
         stage('Upload Artifact to Nexus') {
             steps {
@@ -57,7 +61,7 @@ pipeline {
                     sh '''
                         NEXUS_HOST="http://nexus:8081"
                         REPO_NAME="maven-releases"
-                        FILE_PATH="target/adoption-project-0.0.1-SNAPSHOT.jar"
+                        FILE_PATH="target/adoption-Project-0.0.1-SNAPSHOT.jar"
 
                         curl -u ${NEXUS_USER}:${NEXUS_PASSWORD} -X POST "${NEXUS_HOST}/service/rest/v1/components?repository=${REPO_NAME}" \
                           -H "Content-Type: multipart/form-data" \
@@ -74,7 +78,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "🐋 Building Docker image: ${DOCKER_IMAGE}:latest"
-                sh 'docker build -t ${DOCKER_IMAGE}:latest .'
+                sh 'docker build -t adoption-project:latest .                                  .'
             }
         }
 
@@ -84,7 +88,7 @@ pipeline {
                 
                 // Use Docker Hub credentials
                 withDockerRegistry([credentialsId: "${DOCKER_HUB_CRED_ID}", url: ""]) {
-                    sh 'docker push ${DOCKER_IMAGE}:latest'
+                    sh 'docker push sarah1407/adoption-project:latest                             '
                 }
             }
         }
