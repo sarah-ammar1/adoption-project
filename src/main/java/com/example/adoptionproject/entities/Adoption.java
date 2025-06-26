@@ -2,9 +2,9 @@ package com.example.adoptionproject.entities;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.Entity;
-import javax.persistence.*;
 import java.util.Date;
 
 @Getter
@@ -12,21 +12,15 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
 public class Adoption {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idAdoption;
+    private String id;
 
     private Date dateAdoption;
     private float frais;
 
-    @ManyToOne
-    @JoinColumn(name = "adoptant_id")
+    // You can embed the adoptant and animal, or store their IDs
     private Adoptant adoptant;
-
-    @OneToOne
-    @JoinColumn(name = "animal_id", unique = true)
     private Animal animal;
-
 }

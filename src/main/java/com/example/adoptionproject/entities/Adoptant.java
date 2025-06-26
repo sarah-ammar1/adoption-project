@@ -1,8 +1,10 @@
 package com.example.adoptionproject.entities;
 
-import javax.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -11,18 +13,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
+@Document(collection = "adoptants")
 public class Adoptant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idAdoptant;
+    private String id; // MongoDB uses String IDs by default
 
     private String nom;
     private String adresse;
     private int telephone;
 
-    @OneToMany(mappedBy = "adoptant", cascade = CascadeType.ALL)
+    // Embed adoptions directly (or use DBRefs if needed)
     private List<Adoption> adoptions;
-
 }
