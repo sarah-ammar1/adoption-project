@@ -18,7 +18,7 @@ services:
 
   # Spring Boot Application
   adoption-app:
-    image: sarah1407/adoption-project:latest
+    build: .
     container_name: adoption-springboot
     depends_on:
       - mongodb
@@ -30,8 +30,10 @@ services:
       - adoption-network
 
   # Jenkins for CI/CD Pipeline
+  
   jenkins:
     image: jenkins/jenkins:lts-jdk17
+    privileged: true
     container_name: jenkins
     ports:
       - "8080:8080"
@@ -53,7 +55,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: true
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
       SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
       SONAR_JDBC_PASSWORD: sonar
@@ -63,7 +65,8 @@ services:
       - sonar_temp:/opt/sonarqube/temp
     networks:
       - adoption-network
-
+    depends_on:
+      - sonar-db
   # PostgreSQL for SonarQube (required)
   sonar-db:
     image: postgres:13

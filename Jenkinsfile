@@ -34,19 +34,19 @@ pipeline {
             }
         }
 
-stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('sonarqube') {
-            sh '''
-                chmod +x ./mvnw  # Ensure wrapper is executable
-                ./mvnw sonar:sonar \
-                  -Dsonar.host.url=http://localhost:9000 \
-                  -Dsonar.token=${SONAR_TOKEN}
-            '''
-        }
-    }
-}
 
+stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'SONAR_LOGIN')]) {
+                    sh '''
+                        ./mvnw sonar:sonar \
+                          -Dsonar.host.url=http://sonarqube:9000 \
+                          -Dsonar.login=${SONAR_LOGIN} \
+                          -Dsonar.verbose=true  # Enable debug logs
+                    '''
+                }
+            }
+        }
         stage('Upload Artifact to Nexus') {
             steps {
                 echo "📦 Uploading JAR to Nexus"
